@@ -46,9 +46,7 @@ exports.initialize = async function ({ req, res, font }) {
 
         conversationHistories[senderID].push({ role: "assistant", content: answer });
 
-        const formattedMessage = answer;
-
-        res.json({ message: formattedMessage });
+        res.json({ message: answer });
     } catch (error) {
         console.error("Error processing request:", error);
 
