@@ -6,12 +6,12 @@ exports.config = {
     aliases: ['cosplaytele', 'cosplay18'],
     version: '1.0.0',
     author: 'Kenneth Panio',
-    description: 'Watch a random cosplay image with MediaFire links',
+    description: 'search a random cosplay image with MediaFire links',
     usage: ['/cosplay?query=furina'],
     category: 'nsfw',
 };
 
-exports.initialize = async function ({ req, res }) {
+exports.initialize = async function ({ req, res, color }) {
     try {
         const query = req.query.query || '';
 
@@ -89,5 +89,6 @@ exports.initialize = async function ({ req, res }) {
         }
 
         res.status(statusCode).json({ error: errorMessage });
+        console.error(color.red(error.message))
     }
 };

@@ -9,7 +9,7 @@ exports.config = {
     usage: ['/cdp']
 };
 
-exports.initialize = async function ({ req, res }) {
+exports.initialize = async function ({ req, res, color }) {
     try {
         const data = fs.readFileSync(path.join(__dirname, "assets", "cdp.json"), "utf-8");
         const couple = JSON.parse(data); 
@@ -22,6 +22,6 @@ exports.initialize = async function ({ req, res }) {
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
-        console.log(error);
+        console.error(color.red(error.message));
     }
 };
