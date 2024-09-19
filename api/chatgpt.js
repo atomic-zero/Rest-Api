@@ -3,16 +3,16 @@ const g4f = new G4F();
 
 exports.config = {
     name: 'chatgpt',
-    author: '',
+    author: 'Kenneth Panio',
     description: 'Generates a response from ChatGPT',
-    category: 'ai',
-    usage: ['/chatgpt?question=hi']
+    category: 'Artificial-Intelligence',
+    usage: ['/chatgpt?prompt=hello']
 };
 
 exports.initialize = async function ({ req, res }) {
     try {
         // Check if there is a query parameter named 'question'
-        const question = req.query.question;
+        const question = req.query.prompt;
         if (!question) {
             return res.status(400).json({ error: "No question provided" });
         }

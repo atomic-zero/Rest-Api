@@ -4,18 +4,18 @@ const randomUseragent = require('random-useragent');
 const conversationHistories = {};
 
 exports.config = {
-    name: 'ai',
-    aliases: ['gpt4om', "gpt4olite"],
+    name: 'gpt4om',
+    aliases: ["gpt4olite"],
     version: '1.0.0',
     author: 'Kenneth Panio',
     description: 'Interact with GPT-4O API.',
     usage: ['/ai?prompt=hello'],
-    category: 'artificial-intelligence',
+    category: 'Artificial-Intelligence',
 };
 
 exports.initialize = async function ({ req, res, font }) {
     try {
-        const senderID = req.query.senderID || 'default';
+        const senderID = req.query.uid || 'default';
         const query = req.query.prompt;
 
         if (!query) {

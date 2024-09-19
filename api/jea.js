@@ -4,8 +4,8 @@ exports.config = {
     name: 'jea',
     author: 'Wataru Ajiro',
     description: 'Jea the personal AI girlfriend',
-    category: 'ai',
-    usage: ['/jea?ask=hi']
+    category: 'Artificial-Intelligence',
+    usage: ['/jea?ask=hello']
 };
 
 exports.initialize = async function ({ req, res }) {
