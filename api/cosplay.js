@@ -1,8 +1,6 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 
-const conversationHistories = {};
-
 exports.config = {
     name: 'cosplay',
     aliases: ['cosplaytele', 'cosplay18'],
@@ -17,6 +15,7 @@ exports.initialize = async function ({ req, res }) {
     try {
         const query = req.query.query || '';
 
+        // Fetch search results
         const response = await axios.post('https://cosplaytele.com/wp-admin/admin-ajax.php', new URLSearchParams({
             action: 'ajaxsearchlite_search',
             aslp: query,
@@ -26,63 +25,69 @@ exports.initialize = async function ({ req, res }) {
             headers: {
                 'Content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
                 'Accept': 'text/html',
-                'User-Agent': 'Mozilla/5.0 (Linux; Android 12; Infinix X669 Build/SP1A.210812.016; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/128.0.6613.40 Mobile Safari/537.36',
+                'User-Agent': 'Mozilla/5.0',
                 'Referer': 'https://cosplaytele.com/'
             }
         });
 
         const $ = cheerio.load(response.data);
-        const items = $('.item');
-        const results = [];
-
-        // Extract image and source URLs from the search results
-        items.each((index, element) => {
+        const results = $('.item').map((_, element) => {
             const imgTag = $(element).find('img.asl_image');
             const aTag = $(element).find('a.asl_res_url');
-
             if (imgTag.length && aTag.length) {
-                const imageUrl = imgTag.attr('src');
-                const sourceUrl = aTag.attr('href');
-                results.push({ imageUrl, sourceUrl });
+                return { imageUrl: imgTag.attr('src'), sourceUrl: aTag.attr('href') };
             }
-        });
+        }).get();
 
-        // Select a random entry from the results
+        // Select a random entry
         const randomEntry = results[Math.floor(Math.random() * results.length)];
-        if (!randomEntry) return res.json({ message: "No results found ; <" });
+        if (!randomEntry) return res.status(404).json({ message: "No results found for the query. Please try a different search term." });
 
-        // Fetch the page content of the selected entry
+        // Fetch page content
         const sourceResponse = await axios.get(randomEntry.sourceUrl);
         const $$ = cheerio.load(sourceResponse.data);
 
-        const images = $$('img').map((i, el) => $$(el).attr('src')).get();
-        const mediafireLinks = $$('a').map((i, el) => $$(el).attr('href')).get().filter(link => link.includes('mediafire.com'));
+        const images = $$('img').map((_, el) => $$(el).attr('src')).get();
+        const mediafireLinks = $$('a').map((_, el) => $$(el).attr('href')).get().filter(link => link.includes('mediafire.com'));
 
-        // Select a random image from the page content
+        // Select a random image
         const randomImage = images[Math.floor(Math.random() * images.length)];
-        if (!randomImage) return res.json({ message: "No results found ; <" });
-
-        // Prepare the response
-        const mediafireLinksText = mediafireLinks.length > 0
-            ? mediafireLinks.map((link, index) => `${index + 1}. ${link}`).join("\n")
-            : "N/A";
-
-        const responseJson = {
-            imageUrl: randomImage,
-            images,
-            mediafireLinks
-        };
+        if (!randomImage) return res.status(404).json({ message: "No images found on the selected page. Please try again later." });
 
         res.json({
-            link: mediafireLinksText,
+            mediafire: mediafireLinks.length > 0 ? mediafireLinks : [],
             password: mediafireLinks.length > 0 ? "cosplaytele" : "N/A",
-            multi: images,
-            single: randomImage,
+            multi_img: images,
+            single_img: randomImage,
             author: exports.config.author
         });
     } catch (e) {
-        res.json({
-            error: "ERROR: " + e.message
-        });
+        const statusCode = e.response?.status || 500;
+        let errorMessage;
+
+        switch (statusCode) {
+            case 400:
+                errorMessage = "Bad Request. The server could not understand the request.";
+                break;
+            case 401:
+                errorMessage = "Unauthorized. Authentication is required and has failed or not yet been provided.";
+                break;
+            case 403:
+                errorMessage = "Forbidden. You do not have permission to access this resource.";
+                break;
+            case 404:
+                errorMessage = "Not Found. The requested resource could not be found.";
+                break;
+            case 500:
+                errorMessage = "Internal Server Error. An error occurred on the server.";
+                break;
+            case 502:
+                errorMessage = "Bad Gateway. The server received an invalid response from the upstream server.";
+                break;
+            default:
+                errorMessage = "An unexpected error occurred. Please try again later.";
+        }
+
+        res.status(statusCode).json({ error: errorMessage });
     }
 };
