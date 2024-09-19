@@ -6,8 +6,8 @@ const conversationHistories = {};
 exports.config = {
     name: 'ai',
     aliases: ['gpt4om', "gpt4olite"],
-    author: '1.0.0',
-    credits: 'Kenneth Panio',
+    version: '1.0.0',
+    author: 'Kenneth Panio',
     description: 'Interact with GPT-4O API.',
     usage: ['/ai?prompt=hello'],
     category: 'artificial-intelligence',
@@ -42,11 +42,11 @@ exports.initialize = async function ({ req, res }) {
         };
 
         const response = await axios.post(url, data, { headers });
-        let answer = response.data.answer.replace(/\*\*(.*?)\*\*/g, (_, text) => `•${text}•`);
+        let answer = response.data.answer.replace(/\*\*(.*?)\*\*/g, (_, text) => font.bold(text));
 
         conversationHistories[senderID].push({ role: "assistant", content: answer });
 
-        const formattedMessage = `💽 | GPT-4O-MINI (Assistant)\n━━━━━━━━━━━━━━━━━━\n${answer}\n━━━━━━━━━━━━━━━━━━\n◉ USE "CLEAR" TO RESET CONVERSATION.`;
+        const formattedMessage = answer;
 
         res.json({ message: formattedMessage });
     } catch (error) {

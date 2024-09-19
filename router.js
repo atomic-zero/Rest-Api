@@ -1,8 +1,30 @@
 const router = require("express").Router();
-const { readdirSync } = require('fs-extra');
+const {
+    readdirSync
+} = require('fs-extra');
 const path = require('path');
-const { green, blue, cyan } = require('kleur');
-const { workers } = require("./workers");
+const {
+    green,
+    blue,
+    cyan
+} = require('kleur');
+const {
+    workers
+} = require("./workers");
+const text = require("fontstyles");
+
+var font = {
+    italic: msg => text.italic(msg),
+    bold: msg => text.bold(msg),
+    underline: msg => text.underline(msg),
+    strike: msg => text.strike(msg),
+    monospace: msg => text.monospace(msg),
+    roman: msg => text.roman(msg),
+    bubble: msg => text.bubble(msg),
+    squarebox: msg => text.squarebox(msg),
+    origin: msg => text.origin(msg),
+};
+fonts = font;
 
 try {
     let n = 0;
@@ -15,16 +37,23 @@ try {
 
         // Ensure both config and initialize exist in the script
         if (script.config && script.initialize) {
-            const { name, aliases = [] } = script.config; // Destructure name and aliases, defaulting to an empty array if aliases not provided
+            const {
+                name,
+                aliases = []
+            } = script.config; // Destructure name and aliases, defaulting to an empty array if aliases not provided
 
             // Register main route using the config name
             const routePath = '/' + name;
-            router.get(routePath, (req, res) => script.initialize({ req, res, workers }));
+            router.get(routePath, (req, res) => script.initialize({
+                req, res, workers, fonts, font
+            }));
 
             // Register routes for each alias if they exist
             aliases.forEach(alias => {
                 const aliasRoutePath = '/' + alias;
-                router.get(aliasRoutePath, (req, res) => script.initialize({ req, res, workers }));
+                router.get(aliasRoutePath, (req, res) => script.initialize({
+                    req, res, workers, fonts, font
+                }));
             });
 
             // Register the API into the global.api map using the name (only)
