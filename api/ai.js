@@ -9,7 +9,7 @@ exports.config = {
     version: '1.0.0',
     author: 'Kenneth Panio',
     description: 'Interact with GPT-4O API.',
-    usage: ['/ai?prompt=hello'],
+    usage: ['/gpt4om?prompt=hello'],
     category: 'ai',
 };
 
