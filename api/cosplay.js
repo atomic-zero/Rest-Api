@@ -43,21 +43,21 @@ exports.initialize = async function ({ req, res, color }) {
         const randomEntry = results[Math.floor(Math.random() * results.length)];
         if (!randomEntry) return res.status(404).json({ message: "No results found for the query. Please try a different search term." });
 
-        // Fetch page content
         const sourceResponse = await axios.get(randomEntry.sourceUrl);
         const $$ = cheerio.load(sourceResponse.data);
 
         const images = $$('img').map((_, el) => $$(el).attr('src')).get();
+        const filteredImages = images.slice(2); 
+
         const mediafireLinks = $$('a').map((_, el) => $$(el).attr('href')).get().filter(link => link.includes('mediafire.com'));
 
-        // Select a random image
-        const randomImage = images[Math.floor(Math.random() * images.length)];
+        const randomImage = filteredImages[Math.floor(Math.random() * filteredImages.length)];
         if (!randomImage) return res.status(404).json({ message: "No images found on the selected page. Please try again later." });
 
         res.json({
             mediafire: mediafireLinks.length > 0 ? mediafireLinks : [],
             password: mediafireLinks.length > 0 ? "cosplaytele" : "N/A",
-            multi_img: images,
+            multi_img: filteredImages,
             single_img: randomImage,
             author: exports.config.author
         });
@@ -89,6 +89,6 @@ exports.initialize = async function ({ req, res, color }) {
         }
 
         res.status(statusCode).json({ error: errorMessage });
-        console.error(color.red(error.message))
+        console.error(color.red(e.message));
     }
 };
