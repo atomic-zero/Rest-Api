@@ -5,13 +5,13 @@ const SoundCloud = require('soundcloud-scraper');
 const apiKeyPath = path.join(__dirname, 'system', 'apikey.txt');
 
 exports.config = {
-    name: "music",
+    name: "soundcloud",
     version: "1.0.0",
     description: "Search music from SoundCloud and send it as an attachment.",
     category: "tools",
     author: "Kenneth Panio",
-    aliases: ['play', 'sing', 'song', 'kanta', 'spotify', 'lyrics', 'lyric', 'lyrist', 'soundcloud', 'sc'],
-    usage: '/soundcloud?query=suzume',
+    aliases: ['play', 'sing', 'song', 'kanta', 'spotify', 'lyrics', 'lyric', 'lyrist', 'sc', 'music'],
+    usage: ['/soundcloud?query=suzume'],
 };
 
 exports.initialize = async function ({ req, res, color }) {
