@@ -13,7 +13,7 @@ exports.config = {
     category: 'artificial-intelligence',
 };
 
-exports.initialize = async function ({ req, res }) {
+exports.initialize = async function ({ req, res, font }) {
     try {
         const senderID = req.query.senderID || 'default';
         const query = req.query.prompt;
