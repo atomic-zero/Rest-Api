@@ -418,7 +418,7 @@
                     ${apis.map(api => `
                         <div class="api-card">
                             <div class="api-name">${capitalizeFirstLetter(api.name)}</div>
-                            <div class="api-description">${api.description}</div>
+                            <div class="api-description">${api.description || api.info}</div>
                             <div class="api-method">${api.method || 'GET'}</div>
                             <a href="${api.usage[0]}" class="link-button" data-api-link>Try it out</a>
                         </div>
