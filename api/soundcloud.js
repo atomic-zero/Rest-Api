@@ -8,7 +8,7 @@ exports.config = {
     name: "music",
     version: "1.0.0",
     description: "Search music from SoundCloud and send it as an attachment.",
-    category: "tools"
+    category: "tools",
     author: "Kenneth Panio",
     aliases: ['play', 'sing', 'song', 'kanta', 'spotify', 'lyrics', 'lyric', 'lyrist', 'soundcloud', 'sc'],
     usage: '/soundcloud?query=suzume',
