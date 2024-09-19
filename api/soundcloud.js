@@ -24,7 +24,7 @@ const userAgents = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15"
 ];
-exports.initialize = async function ({ req, res }) {
+exports.initialize = async function ({ req, res, color }) {
     const musicName = req.query.query || '';
 
     if (!musicName) {
@@ -47,22 +47,37 @@ exports.initialize = async function ({ req, res }) {
 
         const song = searchResults[0];
         const songInfo = await client.getSongInfo(song.url);
+        const stream = await songInfo.downloadProgressive();
 
-        let lyrics = "Lyrics not found";
-        try {
-            const lyricsResponse = await axios.get(atob(`aHR0cHM6Ly9seXJpc3QudmVyY2VsLmFwcC9hcGkv`) + encodeURIComponent(musicName), {
-                headers: { 'User-Agent': userAgents[Math.floor(Math.random() * userAgents.length)] }
+        const audioData = [];
+        stream.on('data', chunk => audioData.push(chunk));
+
+        stream.on('end', async () => {
+            const audioBuffer = Buffer.concat(audioData);
+            const audioBase64 = audioBuffer.toString('base64');
+
+            let lyrics = "Lyrics not found";
+            try {
+                const lyricsResponse = await axios.get(atob(`aHR0cHM6Ly9seXJpc3QudmVyY2VsLmFwcC9hcGkv`) + encodeURIComponent(musicName), {
+                    headers: { 'User-Agent': userAgents[Math.floor(Math.random() * userAgents.length)] }
+                });
+                lyrics = lyricsResponse.data.lyrics || "Lyrics not available";
+            } catch (error) {
+                console.log("Error fetching lyrics:", error.message);
+            }
+
+            res.json({
+                title: songInfo.title,
+                lyrics: lyrics,
+                thumbnail: songInfo.thumbnail,
+                audio_url: song.url,
+                audiob64: audioBase64
             });
-            lyrics = lyricsResponse.data.lyrics || "Lyrics not available";
-        } catch (error) {
-            console.log("Error fetching lyrics:", error.message);
-        }
+        });
 
-        res.json({
-            title: songInfo.title,
-            lyrics: lyrics,
-            audio: song.url,
-            thumbnail: songInfo.thumbnail
+        stream.on('error', (error) => {
+            console.error("Error downloading audio:", error);
+            res.status(500).json({ message: "Error downloading audio." });
         });
 
     } catch (error) {
