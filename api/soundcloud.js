@@ -8,9 +8,10 @@ exports.config = {
     name: "music",
     version: "1.0.0",
     description: "Search music from SoundCloud and send it as an attachment.",
+    category: "tools"
     author: "Kenneth Panio",
     aliases: ['play', 'sing', 'song', 'kanta', 'spotify', 'lyrics', 'lyric', 'lyrist', 'soundcloud', 'sc'],
-    usage: '[title]',
+    usage: '/soundcloud?query=suzume',
 };
 
 exports.initialize = async function ({ req, res, color }) {
