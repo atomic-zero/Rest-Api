@@ -5,7 +5,7 @@ exports.config = {
     name: 'chatgpt',
     author: 'Kenneth Panio',
     description: 'Generates a response from ChatGPT',
-    category: 'Artificial-Intelligence',
+    category: 'ai',
     usage: ['/chatgpt?prompt=hello']
 };
 

@@ -10,7 +10,7 @@ exports.config = {
     author: 'Kenneth Panio',
     description: 'Interact with GPT-4O API.',
     usage: ['/ai?prompt=hello'],
-    category: 'Artificial-Intelligence',
+    category: 'ai',
 };
 
 exports.initialize = async function ({ req, res, font }) {

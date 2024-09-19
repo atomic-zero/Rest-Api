@@ -4,7 +4,7 @@ exports.config = {
     name: 'jea',
     author: 'Wataru Ajiro',
     description: 'Jea the personal AI girlfriend',
-    category: 'Artificial-Intelligence',
+    category: 'ai',
     usage: ['/jea?ask=hello']
 };
 
