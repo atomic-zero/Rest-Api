@@ -63,20 +63,21 @@ exports.initialize = async function ({ req, res, color }) {
                 });
                 lyrics = lyricsResponse.data.lyrics || "Lyrics not available";
             } catch (error) {
-                console.log("Error fetching lyrics:", error.message);
+                console.log(color.red("Error fetching lyrics:" + error.message));
             }
 
             res.json({
                 title: songInfo.title,
+                audio_url: song.url,
                 lyrics: lyrics,
                 thumbnail: songInfo.thumbnail,
-                audio_url: song.url,
-                audiob64: audioBase64
+                author: exports.config.author,
+                audio_b64: audioBase64
             });
         });
 
         stream.on('error', (error) => {
-            console.error("Error downloading audio:", error);
+            console.error(color.red("Error downloading audio: " + error.message ));
             res.status(500).json({ message: "Error downloading audio." });
         });
 
