@@ -7,7 +7,7 @@ const apiKeyPath = path.join(__dirname, 'system', 'apikey.txt');
 exports.config = {
     name: "soundcloud",
     version: "1.0.0",
-    description: "Search music from SoundCloud and send it as an attachment.",
+    info: "Search and Download Music From Sound Cloud.",
     category: "tools",
     author: "Kenneth Panio",
     aliases: ['play', 'sing', 'song', 'kanta', 'spotify', 'lyrics', 'lyric', 'lyrist', 'music', 'sc'],
@@ -24,6 +24,7 @@ const userAgents = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15"
 ];
+
 exports.initialize = async function ({ req, res, color }) {
     const musicName = req.query.query || '';
 
@@ -67,11 +68,31 @@ exports.initialize = async function ({ req, res, color }) {
             }
 
             res.json({
+                id: songInfo.id,
                 title: songInfo.title,
+                description: songInfo.description,
+                duration: songInfo.duration,
+                playCount: songInfo.playCount,
+                commentsCount: songInfo.commentsCount,
+                likes: songInfo.likes,
+                genre: songInfo.genre,
                 audio_url: song.url,
-                lyrics: lyrics,
                 thumbnail: songInfo.thumbnail,
-                author: exports.config.author,
+                publishedAt: songInfo.publishedAt,
+                embedURL: songInfo.embedURL,
+                streams: songInfo.streams,
+                trackURL: songInfo.trackURL,
+                author: {
+                    name: songInfo.author.name,
+                    username: songInfo.author.username,
+                    url: songInfo.author.url,
+                    avatarURL: songInfo.author.avatarURL,
+                    verified: songInfo.author.verified,
+                    followers: songInfo.author.followers,
+                    following: songInfo.author.following,
+                    credits: exports.config.author
+                },
+                lyrics: lyrics,
                 audio_b64: audioBase64
             });
         });
