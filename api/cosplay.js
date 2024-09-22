@@ -6,16 +6,16 @@ exports.config = {
     aliases: ['cosplaytele', 'cosplay18'],
     version: '1.0.0',
     author: 'Kenneth Panio',
-    description: 'search a random cosplay image with MediaFire links',
-    usage: ['/cosplay?query=furina&filter=1'],
+    description: 'Search for a random cosplay image with MediaFire links',
+    usage: ['/cosplay?query=furina&filter=true or false'],
     category: 'nsfw',
 };
 
 exports.initialize = async function ({ req, res, color }) {
     try {
         const query = req.query.query || '';
-        const filter = req.query.filter === 'true' || req.query.filter === '1' || 'false';
-        
+        const filter = req.query.filter === 'true' || req.query.filter === '1';
+
         const response = await axios.post('https://cosplaytele.com/wp-admin/admin-ajax.php', new URLSearchParams({
             action: 'ajaxsearchlite_search',
             aslp: query,
@@ -39,24 +39,18 @@ exports.initialize = async function ({ req, res, color }) {
             }
         }).get();
 
+        // Select a random entry
         const randomEntry = results[Math.floor(Math.random() * results.length)];
         if (!randomEntry) return res.status(404).json({ message: "No results found for the query. Please try a different search term." });
 
         const sourceResponse = await axios.get(randomEntry.sourceUrl);
         const $$ = cheerio.load(sourceResponse.data);
 
-        const images = $$('img').map((_, el) => $$(el).attr('src')).get();
-        const filteredImages = images.slice(2);
+        const images = $$('img').map((_, el) => $$(el).attr('src')).get().slice(2);
+        const queryRegex = new RegExp(query, 'i');
+        const relevantImages = images.filter(image => queryRegex.test(image));
 
         const mediafireLinks = $$('a').map((_, el) => $$(el).attr('href')).get().filter(link => link.includes('mediafire.com'));
-
-        let relevantImages;
-        if (filter) {
-            const queryRegex = new RegExp(query, 'i'); // Case-insensitive regex for query
-            relevantImages = filteredImages.filter(image => queryRegex.test(image));
-        } else {
-            relevantImages = filteredImages; // No filtering
-        }
 
         const randomImage = relevantImages[Math.floor(Math.random() * relevantImages.length)];
         if (!randomImage) return res.status(404).json({ message: "No images found on the selected page. Please try again later." });
@@ -64,7 +58,7 @@ exports.initialize = async function ({ req, res, color }) {
         res.json({
             mediafire: mediafireLinks.length > 0 ? mediafireLinks : [],
             password: mediafireLinks.length > 0 ? "cosplaytele" : "N/A",
-            multi_img: relevantImages,
+            multi_img: filter ? relevantImages : images,
             single_img: randomImage,
             author: exports.config.author
         });
@@ -96,6 +90,5 @@ exports.initialize = async function ({ req, res, color }) {
         }
 
         res.status(statusCode).json({ error: errorMessage });
-        console.error(color.red(e.message));
     }
 };

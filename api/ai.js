@@ -48,8 +48,6 @@ exports.initialize = async function ({ req, res, font, color }) {
 
         res.json({ message: answer, author: exports.config.author });
     } catch (error) {
-        console.error(color.red("Error processing request:" + error.message));
-
         let errorMessage = "An unexpected error occurred. Please try again later.";
 
         if (error.response) {
