@@ -7,15 +7,16 @@ exports.config = {
     version: '1.0.0',
     author: 'Kenneth Panio',
     description: 'Search for a random cosplay image with MediaFire links',
-    usage: ['/cosplay?query=furina&filter=true or false'],
+    usage: ['/cosplay?query=raiden%20shogun&filter=true'],
     category: 'nsfw',
 };
 
 exports.initialize = async function ({ req, res, color }) {
     try {
         const query = req.query.query || '';
-        const filter = req.query.filter === 'true' || req.query.filter === '1';
+        const filter = req.query.filter === 'true';
 
+        // Fetch search results
         const response = await axios.post('https://cosplaytele.com/wp-admin/admin-ajax.php', new URLSearchParams({
             action: 'ajaxsearchlite_search',
             aslp: query,
@@ -47,7 +48,8 @@ exports.initialize = async function ({ req, res, color }) {
         const $$ = cheerio.load(sourceResponse.data);
 
         const images = $$('img').map((_, el) => $$(el).attr('src')).get().slice(2);
-        const queryRegex = new RegExp(query, 'i');
+
+        const queryRegex = new RegExp(query.replace(/\s+/g, '[ -]*'), 'i');
         const relevantImages = images.filter(image => queryRegex.test(image));
 
         const mediafireLinks = $$('a').map((_, el) => $$(el).attr('href')).get().filter(link => link.includes('mediafire.com'));
@@ -90,5 +92,5 @@ exports.initialize = async function ({ req, res, color }) {
         }
 
         res.status(statusCode).json({ error: errorMessage });
-    }
+     }
 };
