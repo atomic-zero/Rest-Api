@@ -7,15 +7,15 @@ exports.config = {
     version: '1.0.0',
     author: 'Kenneth Panio',
     description: 'search a random cosplay image with MediaFire links',
-    usage: ['/cosplay?query=furina'],
+    usage: ['/cosplay?query=furina&filter=1'],
     category: 'nsfw',
 };
 
 exports.initialize = async function ({ req, res, color }) {
     try {
         const query = req.query.query || '';
-
-        // Fetch search results
+        const filter = req.query.filter === 'true' || req.query.filter === '1' || 'true';
+        
         const response = await axios.post('https://cosplaytele.com/wp-admin/admin-ajax.php', new URLSearchParams({
             action: 'ajaxsearchlite_search',
             aslp: query,
@@ -39,7 +39,6 @@ exports.initialize = async function ({ req, res, color }) {
             }
         }).get();
 
-        // Select a random entry
         const randomEntry = results[Math.floor(Math.random() * results.length)];
         if (!randomEntry) return res.status(404).json({ message: "No results found for the query. Please try a different search term." });
 
@@ -47,17 +46,25 @@ exports.initialize = async function ({ req, res, color }) {
         const $$ = cheerio.load(sourceResponse.data);
 
         const images = $$('img').map((_, el) => $$(el).attr('src')).get();
-        const filteredImages = images.slice(2); 
+        const filteredImages = images.slice(2);
 
         const mediafireLinks = $$('a').map((_, el) => $$(el).attr('href')).get().filter(link => link.includes('mediafire.com'));
 
-        const randomImage = filteredImages[Math.floor(Math.random() * filteredImages.length)];
+        let relevantImages;
+        if (filter) {
+            const queryRegex = new RegExp(query, 'i'); // Case-insensitive regex for query
+            relevantImages = filteredImages.filter(image => queryRegex.test(image));
+        } else {
+            relevantImages = filteredImages; // No filtering
+        }
+
+        const randomImage = relevantImages[Math.floor(Math.random() * relevantImages.length)];
         if (!randomImage) return res.status(404).json({ message: "No images found on the selected page. Please try again later." });
 
         res.json({
             mediafire: mediafireLinks.length > 0 ? mediafireLinks : [],
             password: mediafireLinks.length > 0 ? "cosplaytele" : "N/A",
-            multi_img: filteredImages,
+            multi_img: relevantImages,
             single_img: randomImage,
             author: exports.config.author
         });
