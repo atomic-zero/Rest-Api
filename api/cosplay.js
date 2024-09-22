@@ -14,7 +14,7 @@ exports.config = {
 exports.initialize = async function ({ req, res, color }) {
     try {
         const query = req.query.query || '';
-        const filter = req.query.filter === 'true' || req.query.filter === '1' || 'true';
+        const filter = req.query.filter === 'true' || req.query.filter === '1' || 'false';
         
         const response = await axios.post('https://cosplaytele.com/wp-admin/admin-ajax.php', new URLSearchParams({
             action: 'ajaxsearchlite_search',
