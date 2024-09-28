@@ -11,7 +11,7 @@ exports.config = {
     author: "Kenneth Panio",
     category: "ai",
     info: "Interact with Gemini AI with image recognition.",
-    usage: [`/gemini?prompt=hello&model=gemini-1.5-flash&uid=${Date.now()}&url=&key=`],
+    usage: [`/gemini?prompt=hello&model=gemini-1.5-flash&uid=${Date.now()}`],
 };
 
 async function waitForFilesActive(files, fileManager) {
@@ -38,8 +38,8 @@ exports.initialize = async function ({ req, res, font, hajime }) {
     const senderID = req.query.uid || 'default';
     const query = req.query.prompt;
     const model = req.query.model || models.gemini[0];
-    const imageUrl = req.query.url;
-    const behavior = req.query.roleplay;
+    const imageUrl = req.query.url || null;
+    const behavior = req.query.roleplay || null;
     const api_key = req.query.key || atob(key);
 
     const safetySettings = [
@@ -51,11 +51,17 @@ exports.initialize = async function ({ req, res, font, hajime }) {
 
     const genAI = new GoogleGenerativeAI(api_key);
     const fileManager = new GoogleAIFileManager(api_key);
-    const modelInstance = genAI.getGenerativeModel({
+
+    const modelConfig = {
         model: model,
-        systemInstruction: behavior,
         safetySettings
-    });
+    };
+
+    if (behavior) {
+        modelConfig.systemInstruction = behavior;
+    }
+
+    const modelInstance = genAI.getGenerativeModel(modelConfig);
 
     const cacheFolderPath = path.join(__dirname, "cache");
 
