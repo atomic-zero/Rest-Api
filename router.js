@@ -16,6 +16,7 @@ const color = {
 };
 
 const { workers } = require("./workers");
+const hajime = await workers();
 const text = require("fontstyles");
 
 const fonts = {
@@ -46,14 +47,14 @@ try {
             // Register main route using the config name
             const routePath = '/' + name;
             router.get(routePath, (req, res) => script.initialize({
-                req, res, workers, fonts, font: fonts, color
+                req, res, hajime, fonts, font: fonts, color
             }));
 
             // Register routes for each alias if they exist
             aliases.forEach(alias => {
                 const aliasRoutePath = '/' + alias;
                 router.get(aliasRoutePath, (req, res) => script.initialize({
-                    req, res, workers, fonts, font: fonts, color
+                    req, res, hajime, fonts, font: fonts, color
                 }));
             });
 
