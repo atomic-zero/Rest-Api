@@ -133,9 +133,9 @@ exports.initialize = async function ({ req, res, font, hajime }) {
         const result = await chatSession.sendMessage(query);
         const answer = result.response.text().replace(/\*\*(.*?)\*\*/g, (_, text) => font.bold(text));
 
-        history.push({ role: "assistant", parts: [{ text: answer }] });
+        history.push({ role: "model", parts: [{ text: answer }] });
 
-        res.json({ message: answer });
+        res.json({ message: answer, author: exports.config.author });
     } catch (error) {
         res.status(500).json({ error: `Failed to process your request: ${error.message}` });
     }
