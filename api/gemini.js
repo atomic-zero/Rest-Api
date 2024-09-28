@@ -111,17 +111,29 @@ exports.initialize = async function ({ req, res, font, hajime }) {
         return;
     }
 
-    history.push({ role: "user", content: query });
+    history.push({ role: "user", parts: [{ text: query }] });
 
     try {
         const chatSession = modelInstance.startChat({
-            history: [...history, fileData ? { role: "user", fileData } : null].filter(Boolean)
+            history: [
+                ...history,
+                fileData ? {
+                    role: "user",
+                    parts: [{
+                        fileData: {
+                            mimeType: fileData.mimeType,
+                            fileUri: fileData.fileUri
+                        }
+                    }]
+                } : null,
+                { role: "user", parts: [{ text: query }] }
+            ].filter(Boolean)
         });
 
         const result = await chatSession.sendMessage(query);
         const answer = result.response.text().replace(/\*\*(.*?)\*\*/g, (_, text) => font.bold(text));
 
-        history.push({ role: "assistant", content: answer });
+        history.push({ role: "assistant", parts: [{ text: answer }] });
 
         res.json({ message: answer });
     } catch (error) {
