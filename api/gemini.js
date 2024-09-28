@@ -1,4 +1,6 @@
-const { GoogleGenerativeAI, GoogleAIFileManager, HarmBlockThreshold, HarmCategory } = require("@google/generative-ai");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { GoogleAIFileManager } = require("@google/generative-ai/server");
+const { HarmBlockThreshold, HarmCategory } = require("@google/generative-ai");
 const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
@@ -11,7 +13,7 @@ exports.config = {
     author: "Kenneth Panio",
     category: "ai",
     info: "Interact with Gemini AI with image recognition.",
-    usage: [`/gemini?prompt=hello&model=gemini-1.5-flash&uid=${Date.now()}`],
+    usage: [`/gemini?prompt=hello&model=gemini-1.5-flash&uid=${Date.now()}&image_url=&roleplay=`],
 };
 
 async function waitForFilesActive(files, fileManager) {
@@ -31,14 +33,11 @@ async function waitForFilesActive(files, fileManager) {
 }
 
 exports.initialize = async function ({ req, res, font, hajime }) {
-   const {
-            key,
-            models
-        } = hajime.api.workers.google;
+    const { key, models } = hajime.api.workers.google;
     const senderID = req.query.uid || 'default';
     const query = req.query.prompt;
     const model = req.query.model || models.gemini[0];
-    const imageUrl = req.query.url || null;
+    const imageUrl = req.query.image_url || null;
     const behavior = req.query.roleplay || null;
     const api_key = req.query.key || atob(key);
 
@@ -62,7 +61,6 @@ exports.initialize = async function ({ req, res, font, hajime }) {
     }
 
     const modelInstance = genAI.getGenerativeModel(modelConfig);
-
     const cacheFolderPath = path.join(__dirname, "cache");
 
     if (!conversationHistories[senderID]) {
@@ -96,6 +94,7 @@ exports.initialize = async function ({ req, res, font, hajime }) {
             return { mimeType, fileUri: uploadResponse.file.uri };
         } catch (error) {
             res.status(500).json({ error: `Failed to process the file: ${error.message}` });
+            return null;
         }
     }
 
@@ -120,7 +119,7 @@ exports.initialize = async function ({ req, res, font, hajime }) {
         });
 
         const result = await chatSession.sendMessage(query);
-        const answer = result.response.text.replace(/\*\*(.*?)\*\*/g, (_, text) => font.bold(text));;
+        const answer = result.response.text.replace(/\*\*(.*?)\*\*/g, (_, text) => font.bold(text));
 
         history.push({ role: "assistant", content: answer });
 
