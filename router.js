@@ -16,7 +16,6 @@ const color = {
 };
 
 const { workers } = require("./workers");
-const hajime = await workers();
 const text = require("fontstyles");
 
 const fonts = {
@@ -31,45 +30,50 @@ const fonts = {
     origin: msg => text.origin(msg),
 };
 
-try {
-    let n = 0;
-    const srcPath = path.join(__dirname, "/api/");
-    const apiFiles = readdirSync(srcPath).filter(file => file.endsWith(".js"));
+const initializeApi = async () => {
+    try {
+        let n = 0;
+        const hajime = await workers();
+        const srcPath = path.join(__dirname, "/api/");
+        const apiFiles = readdirSync(srcPath).filter(file => file.endsWith(".js"));
 
-    for (const file of apiFiles) {
-        const filePath = path.join(srcPath, file);
-        const script = require(filePath);
+        for (const file of apiFiles) {
+            const filePath = path.join(srcPath, file);
+            const script = require(filePath);
 
-        // Ensure both config and initialize exist in the script
-        if (script.config && script.initialize) {
-            const { name, aliases = [] } = script.config; // Destructure name and aliases, defaulting to an empty array if aliases not provided
+            // Ensure both config and initialize exist in the script
+            if (script.config && script.initialize) {
+                const { name, aliases = [] } = script.config; // Destructure name and aliases, defaulting to an empty array if aliases not provided
 
-            // Register main route using the config name
-            const routePath = '/' + name;
-            router.get(routePath, (req, res) => script.initialize({
-                req, res, hajime, fonts, font: fonts, color
-            }));
-
-            // Register routes for each alias if they exist
-            aliases.forEach(alias => {
-                const aliasRoutePath = '/' + alias;
-                router.get(aliasRoutePath, (req, res) => script.initialize({
+                // Register main route using the config name
+                const routePath = '/' + name;
+                router.get(routePath, (req, res) => script.initialize({
                     req, res, hajime, fonts, font: fonts, color
                 }));
-            });
 
-            // Register the API into the global.api map using the name (only)
-            global.api.set(name, script);
+                // Register routes for each alias if they exist
+                aliases.forEach(alias => {
+                    const aliasRoutePath = '/' + alias;
+                    router.get(aliasRoutePath, (req, res) => script.initialize({
+                        req, res, hajime, fonts, font: fonts, color
+                    }));
+                });
 
-            n++;
-            console.log(`${color.green('[ API ]')} ${color.cyan('→')} ${color.blue(`Successfully loaded ${file}`)}`);
+                // Register the API into the global.api map using the name (only)
+                global.api.set(name, script);
+
+                n++;
+                console.log(`${color.green('[ API ]')} ${color.cyan('→')} ${color.blue(`Successfully loaded ${file}`)}`);
+            }
         }
-    }
 
-    console.log(`${color.green('[ API ]')} ${color.cyan('→')} ${color.blue(`Successfully loaded ${n} API files`)}`);
-} catch (error) {
-    console.error(`${color.green('[ API ]')} ${color.cyan('→')} ${color.blue(`Error loading API files: ${error.message}`)}`);
-}
+        console.log(`${color.green('[ API ]')} ${color.cyan('→')} ${color.blue(`Successfully loaded ${n} API files`)}`);
+    } catch (error) {
+        console.error(`${color.green('[ API ]')} ${color.cyan('→')} ${color.blue(`Error loading API files: ${error.message}`)}`);
+    }
+};
+
+initializeApi();
 
 process.on("unhandledRejection", reason => {
     console.error('Unhandled Rejection:', reason);
