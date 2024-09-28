@@ -12,7 +12,7 @@ exports.config = {
     version: "1.0.0",
     author: "Kenneth Panio",
     category: "ai",
-    info: "",
+    info: "Interact with Google Gemini AI with image/video/audio/pdf recognition.\nAvailable Models:\n\n gemini-1.5-flash, gemini-1.5-pro, gemini-1.0-pro, gemini-1.0-pro-latest, gemini-1.0-pro-001, gemini-1.5-pro-latest, gemini-1.5-pro-001, gemini-1.5-pro-exp-0801, gemini-1.5-flash-001, gemini-1.5-flash-latest",
     usage: [`/gemini?prompt=hello&model=gemini-1.5-flash&uid=${Date.now()}&roleplay=You're Neko&google_api_key=&file_url=`],
 };
 
@@ -34,8 +34,6 @@ async function waitForFilesActive(files, fileManager) {
 
 exports.initialize = async function ({ req, res, font, hajime }) {
     const { key, models } = hajime.api.workers.google;
-    const available_models = models.gemini.join(", ");
-    exports.config.info = `Interact with Google Gemini AI with image/video/audio/pdf recognition.\nAvailable Models: ${available_models}`; 
     const senderID = req.query.uid || 'default';
     const query = req.query.prompt;
     const model = req.query.model || models.gemini[0];
