@@ -119,7 +119,7 @@ exports.initialize = async function ({ req, res, font, hajime }) {
         });
 
         const result = await chatSession.sendMessage(query);
-        const answer = result.response.text.replace(/\*\*(.*?)\*\*/g, (_, text) => font.bold(text));
+        const answer = result.response.text().replace(/\*\*(.*?)\*\*/g, (_, text) => font.bold(text));
 
         history.push({ role: "assistant", content: answer });
 
