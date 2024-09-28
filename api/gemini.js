@@ -12,8 +12,8 @@ exports.config = {
     version: "1.0.0",
     author: "Kenneth Panio",
     category: "ai",
-    info: "Interact with Gemini AI with image recognition.",
-    usage: [`/gemini?prompt=hello&model=gemini-1.5-flash&uid=${Date.now()}&image_url=&roleplay=`],
+    info: "",
+    usage: [`/gemini?prompt=hello&model=gemini-1.5-flash&uid=${Date.now()}&roleplay=You're Neko&google_api_key=&file_url=`],
 };
 
 async function waitForFilesActive(files, fileManager) {
@@ -34,12 +34,14 @@ async function waitForFilesActive(files, fileManager) {
 
 exports.initialize = async function ({ req, res, font, hajime }) {
     const { key, models } = hajime.api.workers.google;
+    const available_models = models.gemini.join(", ");
+    exports.config.info = `Interact with Google Gemini AI with image/video/audio/pdf recognition.\nAvailable Models: ${available_models}`; 
     const senderID = req.query.uid || 'default';
     const query = req.query.prompt;
     const model = req.query.model || models.gemini[0];
-    const imageUrl = req.query.image_url || null;
+    const file_url = req.query.file_url || null;
     const behavior = req.query.roleplay || null;
-    const api_key = req.query.key || atob(key);
+    const api_key = req.query.google_api_key || atob(key);
 
     const safetySettings = [
         { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
@@ -101,8 +103,8 @@ exports.initialize = async function ({ req, res, font, hajime }) {
     const linkRegex = /https?:\/\/[^\s]+(\.pdf|\.jpg|\.jpeg|\.png|\.mp3|\.mp4)/i;
     const linkMatch = query.match(linkRegex);
 
-    if (linkMatch || imageUrl) {
-        const content = imageUrl || linkMatch[0];
+    if (linkMatch || file_url) {
+        const content = file_url || linkMatch[0];
         fileData = await processAttachment(content);
     }
 
