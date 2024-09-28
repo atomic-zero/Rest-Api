@@ -36,10 +36,10 @@ exports.initialize = async function ({ req, res, font, hajime }) {
             models
         } = hajime.api.workers.google;
     const senderID = req.query.uid || 'default';
-    const query = req.query.prompt || "";
+    const query = req.query.prompt;
     const model = req.query.model || models.gemini[0];
-    const imageUrl = req.query.url || "";
-    const behavior = req.query.roleplay || "";
+    const imageUrl = req.query.url;
+    const behavior = req.query.roleplay;
     const api_key = req.query.key || atob(key);
 
     const safetySettings = [
