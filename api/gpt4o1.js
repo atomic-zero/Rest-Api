@@ -2,13 +2,10 @@ const axios = require("axios");
 
 exports.config = {
     name: "ai",
-    aliases: ["gpt4o1",
-        "o1",
-        "o1p",
-        "gpt"],
+    aliases: ["gpt4o1", "o1", "o1p", "gpt"],
     version: "1.0.0",
     credits: "Kenneth Panio",
-    info: "Interact with GPT-4 o1 preview AI with websearch, file generation and image recognition based on image url in query.",
+    info: "Interact with GPT-4 o1 preview AI with websearch, file generation, and image recognition based on image URL in query.",
     usage: [`/ai?prompt=generate_a_cat_image&uid=${Date.now()}`],
     guide: "ai How does quantum computing work?",
     category: "ai"
@@ -16,27 +13,21 @@ exports.config = {
 
 const conversationHistories = {};
 
-exports.initialize = async ({
-    req, res, font
-}) => {
+exports.initialize = async ({ req, res, font }) => {
     const senderID = req.query.uid || 'default';
     const query = req.query.prompt;
 
-    if (!query) return res.status(400).json({
-        error: "No prompt provided"
-    });
+    if (!query) {
+        return res.status(400).json({ error: "No prompt provided" });
+    }
 
     if (['clear', 'reset', 'forgot', 'forget'].includes(query.toLowerCase())) {
         conversationHistories[senderID] = [];
-        return res.json({
-            message: "Conversation history cleared."
-        });
+        return res.json({ message: "Conversation history cleared." });
     }
 
     const history = conversationHistories[senderID] || [];
-    history.push({
-        senderType: "USER", content: query
-    });
+    history.push({ senderType: "USER", content: query });
     conversationHistories[senderID] = history;
 
     const baseUrl = "https://markbot-10923.chipp.ai";
@@ -55,19 +46,17 @@ exports.initialize = async ({
         'Accept-Language': 'en-US,en;q=0.9,fil;q=0.8'
     };
 
-    const getResponse = async () => axios.post(`${baseUrl}/api/openai/chat`, {
-        messageList: history,
-        fileIds: [],
-        threadId: `thread_${senderID}`
-    }, {
-        headers
-    });
+    const getResponse = async () => {
+        return axios.post(`${baseUrl}/api/openai/chat`, {
+            messageList: history,
+            fileIds: [],
+            threadId: `thread_${senderID}`
+        }, { headers });
+    };
 
     const isImageUrl = async (url) => {
         try {
-            const {
-                headers
-            } = await axios.head(url);
+            const { headers } = await axios.head(url);
             return headers['content-type'].startsWith('image');
         } catch {
             return false;
@@ -79,26 +68,25 @@ exports.initialize = async ({
         try {
             const response = await getResponse();
             answer = response.data.trim();
-            history.push({
-                senderType: "BOT", content: answer
-            });
+            history.push({ senderType: "BOT", content: answer });
             break;
         } catch (error) {
             if (attempts === 2) {
-                return res.status(500).json({
-                    error: "Service unavailable"
-                });
+                return res.status(500).json({ error: "Service unavailable" });
             }
             await new Promise(resolve => setTimeout(resolve, 1000 * (attempts + 1)));
         }
     }
 
     const imageUrls = [...answer.matchAll(/!\[.*?\]\((https?:\/\/[^\s)]+)\)/g)]
-    .map(([, url]) => url)
-    .filter(async (url) => await isImageUrl(url));
+        .map(([, url]) => url);
+
+    const validImageUrls = await Promise.all(
+        imageUrls.map(async (url) => (await isImageUrl(url)) ? url : null)
+    ).then(results => results.filter(Boolean));
 
     res.json({
-        message: answer.replace(/\*\*(.*?)\*\*/g, (_, text) => font.bold(text));,
-        img_urls: imageUrls
+        message: answer.replace(/\*\*(.*?)\*\*/g, (_, text) => font.bold(text)),
+        img_urls: validImageUrls
     });
 };
