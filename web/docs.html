@@ -11,8 +11,8 @@
     <style>
         :root {
             --bg-color: #0d0d0d;
-            --text-color: #00ffcc;
-            --accent-color: #ff007f;
+            --text-color: red;
+            --accent-color: yellow;
             --border-color: #222;
             --hover-color: #1a1a1a;
             --card-bg-color: #1e1e1e;
@@ -257,8 +257,8 @@
             showLoading();
             try {
                 const [apiListResponse, statsResponse] = await Promise.all([
-                    axios.get('/api-list'),
-                    axios.get('/api-stats')
+                    axios.get('https://rest-api-production-5054.up.railway.app/api-list'),
+                    axios.get('https://rest-api-production-5054.up.railway.app/api-stats')
                 ]);
 
                 const apis = apiListResponse.data;
