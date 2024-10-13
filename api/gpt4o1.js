@@ -46,9 +46,14 @@ exports.initialize = async ({ req, res, font }) => {
         'Accept-Language': 'en-US,en;q=0.9,fil;q=0.8'
     };
 
+    const time = new Date().toLocaleString("en-US", { timeZone: "Asia/Manila", hour12: true });
+
     const getResponse = async () => {
         return axios.post(`${baseUrl}/api/openai/chat`, {
-            messageList: history,
+            messageList: [
+                { senderType: "BOT", content: `System: The Current Time in Philippines is ${time}` },
+                ...history
+            ],
             fileIds: [],
             threadId: `thread_${senderID}`
         }, { headers });
@@ -87,6 +92,7 @@ exports.initialize = async ({ req, res, font }) => {
 
     res.json({
         message: answer.replace(/\*\*(.*?)\*\*/g, (_, text) => font.bold(text)).replace(/TOOL_CALL:/g, ''),
-        img_urls: validImageUrls
+        img_urls: validImageUrls,
+        author: exports.config.credits
     });
 };
