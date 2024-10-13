@@ -86,7 +86,7 @@ exports.initialize = async ({ req, res, font }) => {
     ).then(results => results.filter(Boolean));
 
     res.json({
-        message: answer.replace(/\*\*(.*?)\*\*/g, (_, text) => font.bold(text)),
+        message: answer.replace(/\*\*(.*?)\*\*/g, (_, text) => font.bold(text)).replace(/TOOL_CALL:/g, ''),
         img_urls: validImageUrls
     });
 };
