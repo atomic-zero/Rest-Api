@@ -14,7 +14,7 @@ exports.config = {
 };
 
 exports.initialize = async function ({ req, res, font, color }) {
-    const senderID = req.query.uid || 'default';
+    const senderID = req.query.uid || Date.now();
     const query = req.query.prompt;
 
     if (!query) {

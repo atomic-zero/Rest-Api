@@ -14,7 +14,7 @@ exports.config = {
 const conversationHistories = {};
 
 exports.initialize = async ({ req, res, font }) => {
-    const senderID = req.query.uid || 'default';
+    const senderID = req.query.uid || Date.now();
     const query = req.query.prompt;
 
     if (!query) {

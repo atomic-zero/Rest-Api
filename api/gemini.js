@@ -34,7 +34,7 @@ async function waitForFilesActive(files, fileManager) {
 
 exports.initialize = async function ({ req, res, font, hajime }) {
     const { key, models } = hajime.api.workers.google;
-    const senderID = req.query.uid || 'default';
+    const senderID = req.query.uid || Date.now();
     const query = req.query.prompt;
     const model = req.query.model || models.gemini[0];
     const file_url = req.query.file_url || null;
