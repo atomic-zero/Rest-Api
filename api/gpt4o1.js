@@ -76,6 +76,9 @@ exports.initialize = async ({ req, res, font }) => {
             history.push({ senderType: "BOT", content: answer });
             break;
         } catch (error) {
+            if (error.response && error.response.data && error.response.data.error) {
+                return res.status(500).json({ error: error.response.data.error });
+            }
             if (attempts === 2) {
                 return res.status(500).json({ error: "Service unavailable" });
             }
