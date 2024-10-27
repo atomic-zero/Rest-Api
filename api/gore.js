@@ -12,7 +12,7 @@ exports.config = {
     category: 'nsfw',
 };
 
-exports.run = async function ({ req, res }) {
+exports.initialize = async function ({ req, res }) {
     try {
         const page = Math.floor(Math.random() * 100);
         const response = await axios.get(`https://seegore.com/gore/page/${page}`);
