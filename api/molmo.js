@@ -6,6 +6,7 @@ exports.config = {
   aliases: ["flux"],
   version: "1.0.0",
   category: "tools",
+  author: "Kenneth Panio",
   info: "Generates image using flux model from molmo provider",
   usage: ["/molmo?prompt=chatbox%20logo"],
   credits: "Kenneth Panio",
@@ -32,7 +33,7 @@ exports.initialize = async function (req, res) {
       return res.status(503).send("Image Generation Temporarily Unavailable!");
     }
 
-    res.json({ status: true, img_url: imageUrl });
+    res.json({ status: true, img_url: imageUrl, author: exports.config.author });
 
   } catch (error) {
     res.status(500).send(`Failed to generate image: ${error.message}`);
