@@ -1,8 +1,10 @@
+
 const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
 const SoundCloud = require('soundcloud-scraper');
-const apiKeyPath = path.join(__dirname, 'system', 'apikey.txt');
+
+const apiKeyPath = path.join(__dirname, 'system', 'apikey.json');
 
 exports.config = {
     name: "soundcloud",
@@ -27,21 +29,23 @@ const userAgents = [
 
 exports.initialize = async function ({ req, res, color }) {
     const musicName = req.query.query || '';
-
     if (!musicName) {
         return res.status(400).json({ message: "Please provide the title of the music!" });
     }
 
     try {
-        let apiKey = fs.existsSync(apiKeyPath) ? fs.readFileSync(apiKeyPath, 'utf8').trim() : await SoundCloud.keygen();
-        if (!fs.existsSync(apiKeyPath)) {
+        let apiKey;
+        if (fs.existsSync(apiKeyPath)) {
+            const data = fs.readFileSync(apiKeyPath, 'utf8');
+            apiKey = JSON.parse(data).apiKey;
+        } else {
+            apiKey = await SoundCloud.keygen();
             fs.mkdirSync(path.dirname(apiKeyPath), { recursive: true });
-            fs.writeFileSync(apiKeyPath, apiKey);
+            fs.writeFileSync(apiKeyPath, JSON.stringify({ apiKey }));
         }
 
         const client = new SoundCloud.Client(apiKey);
         const searchResults = await client.search(musicName, 'track');
-
         if (!searchResults.length) {
             return res.status(404).json({ message: "Can't find the music you're looking for." });
         }
@@ -49,15 +53,14 @@ exports.initialize = async function ({ req, res, color }) {
         const song = searchResults[0];
         const songInfo = await client.getSongInfo(song.url);
         const stream = await songInfo.downloadProgressive();
-
         const audioData = [];
-        stream.on('data', chunk => audioData.push(chunk));
 
+        stream.on('data', chunk => audioData.push(chunk));
         stream.on('end', async () => {
             const audioBuffer = Buffer.concat(audioData);
             const audioBase64 = audioBuffer.toString('base64');
-
             let lyrics = "Lyrics not found";
+
             try {
                 const lyricsResponse = await axios.get(atob(`aHR0cHM6Ly9seXJpc3QudmVyY2VsLmFwcC9hcGkv`) + encodeURIComponent(musicName), {
                     headers: { 'User-Agent': userAgents[Math.floor(Math.random() * userAgents.length)] }
@@ -68,6 +71,7 @@ exports.initialize = async function ({ req, res, color }) {
             }
 
             res.json({
+                status: true,
                 id: songInfo.id,
                 title: songInfo.title,
                 description: songInfo.description,
@@ -98,14 +102,14 @@ exports.initialize = async function ({ req, res, color }) {
         });
 
         stream.on('error', (error) => {
-            console.error(color.red("Error downloading audio: " + error.message ));
+            console.error(color.red("Error downloading audio: " + error.message));
             res.status(500).json({ message: "Error downloading audio." });
         });
 
     } catch (error) {
         if (error.message.includes('Invalid ClientID')) {
             const newKey = await SoundCloud.keygen();
-            fs.writeFileSync(apiKeyPath, newKey);
+            fs.writeFileSync(apiKeyPath, JSON.stringify({ apiKey: newKey }));
             res.status(500).json({ message: 'New API key generated. Please retry the search!' });
         } else {
             res.status(500).json({ error: error.message });

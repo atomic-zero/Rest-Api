@@ -52,7 +52,7 @@ exports.initialize = async function ({ req, res, font, color }) {
 
             conversationHistories[senderID].push({ role: "assistant", content: answer });
             success = true;
-            res.json({ message: answer, author: exports.config.author });
+            res.json({ status: true, message: answer, author: exports.config.author });
         } catch (error) {
             retries -= 1;
 

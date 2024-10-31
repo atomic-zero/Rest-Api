@@ -58,6 +58,7 @@ exports.initialize = async function ({ req, res, color }) {
         if (!randomImage) return res.status(404).json({ message: "No images found on the selected page. Please try again later." });
 
         res.json({
+            status: true,
             mediafire: mediafireLinks.length > 0 ? mediafireLinks : [],
             password: mediafireLinks.length > 0 ? "cosplaytele" : "N/A",
             multi_img: filter ? relevantImages : images,

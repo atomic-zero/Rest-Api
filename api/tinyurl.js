@@ -5,7 +5,8 @@ exports.config = {
     category: "tools",
     aliases: ["shorten", "shorturl", "urlshort"],
     info: "Shortens the provided URL",
-    usage: ["/tinyurl?url=https://google.com"]
+    usage: ["/tinyurl?url=https://google.com"],
+    author: "Kenneth Panio"
 };
 
 exports.initialize = async ({ req, res }) => {
@@ -18,7 +19,7 @@ exports.initialize = async ({ req, res }) => {
 
     try {
         const { data } = await get(`https://tinyurl.com/api-create.php?url=${url}`);
-        res.json({ short: data });
+        res.json({ status: true, short: data, author: exports.config.author });
     } catch (error) {
         const status = error.response?.status || 500;
         const message = error.response 

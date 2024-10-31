@@ -35,6 +35,7 @@ exports.initialize = async function ({ req, res }) {
         const detailResponse = await axios.get(random.link);
         const $$ = cheerio.load(detailResponse.data);
         const result = {
+            status: true,
             title: random.title,
             source: random.link,
             thumb: random.thumb,
