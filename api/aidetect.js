@@ -42,7 +42,7 @@ exports.initialize = async ({
     };
 
     const getTextToAnalyze = () => {
-        return font.origin(req.body.text || '').trim();
+        return font.origin(req.query.text || '').trim();
     };
 
     const text = getTextToAnalyze();
