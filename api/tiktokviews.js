@@ -36,7 +36,7 @@ const createHeaders = () => {
     "content-type": "application/json",
     "sec-ch-ua-mobile": "?1",
     "user-agent": getRandomIOSUserAgent(), // Use the iOS user agent
-    "sec-ch-ua-platform": "\"iOS\"", // Change platform to iOS
+    "sec-ch-ua-platform": "\"Android\"", // Change platform to iOS
     "origin": "https://likesjet.com",
     "sec-fetch-site": "same-site",
     "sec-fetch-mode": "cors",
