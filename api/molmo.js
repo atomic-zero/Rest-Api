@@ -8,8 +8,7 @@ exports.config = {
   category: "tools",
   author: "Kenneth Panio",
   info: "Generates image using flux model from molmo provider",
-  usage: ["/molmo?prompt=chatbox%20logo"],
-  credits: "Kenneth Panio",
+  usage: ["/molmo?prompt=chatbox%20logo"]
 };
 
 exports.initialize = async function (req, res) {
