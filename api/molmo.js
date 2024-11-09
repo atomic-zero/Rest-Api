@@ -4,7 +4,6 @@ const axios = require("axios");
 exports.config = {
   name: "molmo",
   aliases: ["flux"],
-  version: "1.0.0",
   category: "tools",
   author: "Kenneth Panio",
   info: "Generates image using flux model from molmo provider",
