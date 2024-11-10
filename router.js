@@ -43,15 +43,21 @@ const initializeApi = async () => {
 
             if (script.config && script.initialize) {
                 const { name, aliases = [], author, credits } = script.config;
-                
-                const isValid = await validator(author || credits);
-                
+
+                let isValid = false;
+                if (author) {
+                    isValid = await validator(author);
+                }
+                if (!isValid && credits) {
+                    isValid = await validator(credits);
+                }
+
                 const routeHandler = isValid
                     ? (req, res) => script.initialize({ req, res, hajime, fonts, font: fonts, color })
                     : (req, res) => {
                         res.status(500).json({
                             status: false,
-                            message: `Error: API might be down.`
+                            message: `Error: API might be down or invalid credentials provided for ${author || credits || 'unknown author/credits'}.`
                         });
                     };
 
