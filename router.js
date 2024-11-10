@@ -42,10 +42,11 @@ const initializeApi = async () => {
             const script = require(filePath);
 
             if (script.config && script.initialize) {
-
                 const { name, aliases = [] } = script.config;
 
-                const isValid = await validator(script.config.author || script.config.author);
+                const author = script.config.author || script.config.credits;
+
+                const isValid = await validator(author);
 
                 const routeHandler = isValid
                     ? (req, res) => script.initialize({ req, res, hajime, fonts, font: fonts, color })
