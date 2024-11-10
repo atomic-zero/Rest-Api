@@ -6,7 +6,7 @@ exports.config = {
   name: 'gore',
   aliases: ['seegore', 'gorepage'],
   version: '1.0.0',
-  author: 'International Security',
+  author: 'Kenneth Panio',
   description: 'Fetch a random gore image and video details from seegore.com',
   usage: ['/gore'],
   category: 'nsfw',
