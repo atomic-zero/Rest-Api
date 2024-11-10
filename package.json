@@ -10,6 +10,7 @@
   "author": "Wataru Ajiro",
   "license": "ISC",
   "dependencies": {
+    "child_process": "^1.0.2",
     "@google/generative-ai": "0.20.0",
     "soundcloud-scraper": "^5.0.3",
     "cheerio": "^1.0.0",

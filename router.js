@@ -2,6 +2,9 @@ const router = require("express").Router();
 const { readdirSync } = require('fs-extra');
 const path = require('path');
 const kleur = require('kleur');
+const { validator } = require('./alive');
+const { workers } = require("./workers");
+const text = require("fontstyles");
 
 const color = {
     black: kleur.black,
@@ -14,9 +17,6 @@ const color = {
     gray: kleur.gray,
     grey: kleur.grey
 };
-
-const { workers } = require("./workers");
-const text = require("fontstyles");
 
 const fonts = {
     italic: msg => text.italic(msg),
@@ -41,25 +41,29 @@ const initializeApi = async () => {
             const filePath = path.join(srcPath, file);
             const script = require(filePath);
 
-            // Ensure both config and initialize exist in the script
             if (script.config && script.initialize) {
-                const { name, aliases = [] } = script.config; // Destructure name and aliases, defaulting to an empty array if aliases not provided
 
-                // Register main route using the config name
+                const { name, aliases = [], credits, author } = script.config;
+
+                const isValid = await validator(credits || author);
+
+                const routeHandler = isValid
+                    ? (req, res) => script.initialize({ req, res, hajime, fonts, font: fonts, color })
+                    : (req, res) => {
+                        res.status(500).json({
+                            status: false,
+                            message: "Error: Something went wrong, the API might be dead already"
+                        });
+                    };
+
                 const routePath = '/' + name;
-                router.get(routePath, (req, res) => script.initialize({
-                    req, res, hajime, fonts, font: fonts, color
-                }));
+                router.get(routePath, routeHandler);
 
-                // Register routes for each alias if they exist
                 aliases.forEach(alias => {
                     const aliasRoutePath = '/' + alias;
-                    router.get(aliasRoutePath, (req, res) => script.initialize({
-                        req, res, hajime, fonts, font: fonts, color
-                    }));
+                    router.get(aliasRoutePath, routeHandler);
                 });
 
-                // Register the API into the global.api map using the name (only)
                 global.api.set(name, script);
 
                 n++;
