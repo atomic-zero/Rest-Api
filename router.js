@@ -42,16 +42,16 @@ const initializeApi = async () => {
             const script = require(filePath);
 
             if (script.config && script.initialize) {
-                const { name, aliases = [], author, credits} = script.config;
-
+                const { name, aliases = [], author, credits } = script.config;
+                
                 const isValid = await validator(author || credits);
-
+                
                 const routeHandler = isValid
                     ? (req, res) => script.initialize({ req, res, hajime, fonts, font: fonts, color })
                     : (req, res) => {
                         res.status(500).json({
                             status: false,
-                            message: "Error: Something went wrong, the API might be dead already"
+                            message: `Error: API might be down.`
                         });
                     };
 
