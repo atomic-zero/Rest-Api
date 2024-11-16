@@ -1,4 +1,3 @@
-
 const axios = require('axios');
 const cheerio = require('cheerio');
 
@@ -7,7 +6,7 @@ exports.config = {
   aliases: ['cosplaytele', 'cosplay18'],
   version: '1.0.0',
   author: 'Kenneth Panio',
-  description: 'Search for a random cosplay image with MediaFire links',
+  description: 'Search for a random cosplay image with cosplayer name and MediaFire links',
   usage: ['/cosplay?query=raiden%20shogun&filter=true'],
   category: 'nsfw',
 };
@@ -36,7 +35,15 @@ exports.initialize = async ({ req, res }) => {
     const results = $('.item').map((_, element) => {
       const imgTag = $(element).find('img.asl_image');
       const aTag = $(element).find('a.asl_res_url');
-      return imgTag.length && aTag.length ? { imageUrl: imgTag.attr('src'), sourceUrl: aTag.attr('href') } : null;
+      const cosplayerName = $(element).find('h3 a').text().match(/^(.+?) cosplay/)[1]?.trim();
+
+      return imgTag.length && aTag.length
+        ? {
+            imageUrl: imgTag.attr('src'),
+            sourceUrl: aTag.attr('href'),
+            cosplayerName: cosplayerName || "Unknown Cosplayer",
+          }
+        : null;
     }).get();
 
     // Select a random entry
@@ -59,11 +66,12 @@ exports.initialize = async ({ req, res }) => {
 
     res.json({
       status: true,
+      name: randomEntry.cosplayerName,
       mediafire: mediafireLinks.length > 0 ? mediafireLinks : [],
       password: mediafireLinks.length > 0 ? "cosplaytele" : "N/A",
       multi_img: filter ? relevantImages : images,
       single_img: randomImage,
-      author: exports.config.author
+      author: exports.config.author,
     });
   } catch (e) {
     const statusCode = e.response?.status || 500;
