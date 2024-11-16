@@ -10,10 +10,10 @@ exports.config = {
   author: "Kenneth Panio"
 };
 
-exports.initialize = async ({ req, res, font }) => {
+exports.initialize = async ({ req, res, font , hajime }) => {
   const detectAI = async (text) => {
     try {
-      const response = await axios.post('https://demo.thecheckerai.com/api/detect', { text }, {
+      const response = await axios.post(hajime.api.demo + '/api/detect', { text }, {
         headers: {
           'Accept': 'application/json, text/plain, */*',
           'Content-Type': 'application/json'

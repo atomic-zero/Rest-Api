@@ -18,7 +18,7 @@ exports.initialize = async ({ req, res }) => {
     const filter = req.query.filter === 'true';
 
     // Fetch search results
-    const response = await axios.post('https://cosplaytele.com/wp-admin/admin-ajax.php', new URLSearchParams({
+    const response = await axios.post(hajime.api.cosplaytele + '/wp-admin/admin-ajax.php', new URLSearchParams({
       action: 'ajaxsearchlite_search',
       aslp: query,
       asid: '2',
@@ -28,7 +28,7 @@ exports.initialize = async ({ req, res }) => {
         'Content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
         'Accept': 'text/html',
         'User-Agent': 'Mozilla/5.0',
-        'Referer': 'https://cosplaytele.com/'
+        'Referer': hajime.api.cosplaytele
       }
     });
 
