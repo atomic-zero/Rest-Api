@@ -66,7 +66,7 @@ app.get("/api-stats", async function (req, res) {
 app.get("/restart", async function (req, res) {
     const { pass } = req.query;
     
-    if (!pass || pass !== global.host.secret) {
+    if (!pass || pass !== global.host.key) {
         return res.json({ error: "password is missing or incorrect!"});
     }
     
