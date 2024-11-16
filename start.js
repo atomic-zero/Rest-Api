@@ -67,7 +67,7 @@ app.get("/restart", async function (req, res) {
     const { pass } = req.query;
     
     if (!pass || pass !== global.host.secret) {
-        return res.json({ error: "password is missing!"});
+        return res.json({ error: "password is missing or incorrect!"});
     }
     
     res.json({ message: "Rebooting Rest API." });
