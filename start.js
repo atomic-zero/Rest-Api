@@ -63,6 +63,17 @@ app.get("/api-stats", async function (req, res) {
   res.json(stats);
 });
 
+app.get("/restart", async function (req, res) {
+    const { pass } = req.query;
+    
+    if (!pass || pass !== global.host.secret) {
+        return res.json({ error: "password is missing!"});
+    }
+    
+    res.json({ message: "Rebooting Rest API." });
+    process.exit(1);
+});
+
 app.get("/", async function (req, res) {
   res.sendFile(path.join(__dirname, "web/docs.html"));
 });
