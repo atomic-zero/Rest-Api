@@ -5,7 +5,7 @@ const randomUseragent = require("random-useragent");
 
 const conversationHistories = {};
 
-exports"config"] = {
+exports.config = {
     name: "haji",
     aliases: ["hajime"],
     version: "1.0.0",
@@ -17,7 +17,7 @@ exports"config"] = {
     ],
 };
 
-exports["initialize"] = async function ({
+exports.initialize = async function ({
     req, res, font, hajime
 }) {
     const {
