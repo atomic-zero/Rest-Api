@@ -7,7 +7,7 @@ exports.config = {
     aliases: ["smsbomb",
         "sendsms"],
     info: "Send bulk SMS to a target phone number for testing purposes.",
-    usage: ["/smsbomber?phone=09276547755&times=100"],
+    usage: ["/smsbomber?phone=09276547755&times=10"],
     author: "Kenneth Panio"
 };
 
