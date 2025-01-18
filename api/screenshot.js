@@ -4,20 +4,23 @@ exports.config = {
     name: "screenshot",
     category: "tools",
     aliases: ["thumbnail", "capture"],
-    info: "Stream a full-page screenshot of a given URL.",
-    usage: ["/screenshot?url=https://google.com"],
+    info: "Fetch a full-page screenshot of a given URL as an image.",
+    usage: ["/screenshot?url=https://example.com"],
     author: "Kenneth Panio",
 };
 
-const fetchScreenshotStream = async (url) => {
+const fetchScreenshotBuffer = async (url) => {
     try {
         const thumUrl = `https://image.thum.io/get/width/1920/crop/400/fullpage/noanimate/${encodeURIComponent(url)}`;
         const response = await axios({
             url: thumUrl,
             method: "GET",
-            responseType: "stream",
+            responseType: "arraybuffer",
         });
-        return response;
+        return {
+            buffer: response.data,
+            contentType: response.headers["content-type"],
+        };
     } catch (error) {
         console.error("Screenshot fetch error:", error.message);
         return null;
@@ -33,15 +36,16 @@ exports.initialize = async ({ req, res }) => {
         });
     }
 
-    const screenshotStream = await fetchScreenshotStream(url);
+    console.log(`📸 Fetching screenshot for URL: ${url}`);
+    const screenshot = await fetchScreenshotBuffer(url);
 
-    if (!screenshotStream) {
+    if (!screenshot) {
         return res.status(500).json({
             error: "Failed to fetch screenshot.",
         });
     }
 
-    res.setHeader("Content-Type", screenshotStream.headers["content-type"]);
+    res.setHeader("Content-Type", screenshot.contentType);
     res.setHeader("Content-Disposition", "inline");
-    screenshotStream.data.pipe(res);
+    res.send(screenshot.buffer);
 };
