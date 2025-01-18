@@ -2,17 +2,20 @@ const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
 
+// Valid URL regex to ensure it starts with http:// or https://
+const urlRegex = /^(https?:\/\/)([a-z0-9-]+\.)+[a-z]{2,6}\/?$/i;
+
 exports.config = {
     name: "screenshot",
     category: "tools",
     aliases: ["thumbnail", "capture"],
-    info: "Fetch a full-page screenshot of a given URL, save it locally, send it to the client, and then delete it.",
+    info: "Fetch a full-page screenshot of a given URL, stream it to the client, and delete it after use.",
     usage: ["/screenshot?url=https://example.com"],
     author: "Kenneth Panio",
 };
 
-// Fetch and save the screenshot
-const fetchAndSaveScreenshot = async (url, filePath) => {
+// Fetch and stream the screenshot
+const fetchAndStreamScreenshot = async (url, res) => {
     try {
         const thumUrl = `https://image.thum.io/get/width/1920/crop/400/fullpage/noanimate/${encodeURIComponent(url)}`;
         const response = await axios({
@@ -21,17 +24,17 @@ const fetchAndSaveScreenshot = async (url, filePath) => {
             responseType: "stream",
         });
 
-        // Pipe the stream to a file
-        const writer = fs.createWriteStream(filePath);
-        response.data.pipe(writer);
+        // Set headers to stream the image as a response
+        res.setHeader("Content-Type", "image/png");
+        res.setHeader("Content-Disposition", "inline; filename=screenshot.png");
 
-        return new Promise((resolve, reject) => {
-            writer.on("finish", resolve);
-            writer.on("error", reject);
-        });
+        // Pipe the image stream to the response
+        response.data.pipe(res);
+
+        return true;
     } catch (error) {
         console.error("Screenshot fetch error:", error.message);
-        return null;
+        return false;
     }
 };
 
@@ -39,38 +42,26 @@ const fetchAndSaveScreenshot = async (url, filePath) => {
 exports.initialize = async ({ req, res }) => {
     const { url } = req.query;
 
+    // Check if the URL is provided
     if (!url) {
         return res.status(400).json({
             error: "Missing 'url' query parameter.",
         });
     }
 
-    const fileName = `screenshot-${Date.now()}.png`;
-    const filePath = path.join(__dirname, fileName);
-
-    console.log(`📸 Fetching screenshot for URL: ${url}`);
-    const isDownloaded = await fetchAndSaveScreenshot(url, filePath);
-
-    if (!isDownloaded) {
-        return res.status(500).json({
-            error: "Failed to fetch and save screenshot.",
+    // Validate URL format using regex
+    if (!urlRegex.test(url)) {
+        return res.status(400).json({
+            error: "Invalid URL. Only URLs starting with 'http://' or 'https://' are allowed.",
         });
     }
 
-    // Send the file to the client
-    res.sendFile(filePath, (err) => {
-        if (err) {
-            console.error("Error sending file:", err.message);
-            return res.status(500).json({ error: "Failed to send screenshot." });
-        }
+    console.log(`📸 Fetching screenshot for URL: ${url}`);
+    const isStreamed = await fetchAndStreamScreenshot(url, res);
 
-        // Delete the file after sending
-        fs.unlink(filePath, (unlinkErr) => {
-            if (unlinkErr) {
-                console.error("Error deleting file:", unlinkErr.message);
-            } else {
-                console.log(`🗑️ Deleted temporary file: ${fileName}`);
-            }
+    if (!isStreamed) {
+        return res.status(500).json({
+            error: "Failed to fetch and stream screenshot.",
         });
-    });
+    }
 };
